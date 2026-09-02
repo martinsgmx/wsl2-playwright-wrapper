@@ -10,6 +10,7 @@ All scripts are `chmod +x`, `set -euo pipefail`, and use absolute Windows paths 
 | `scripts/wsl-host-ip.sh` | Prints `localhost` (mirrored) or gateway (NAT) | respects `CDP_HOST` |
 | `scripts/check-cdp.sh` | `curl /json/version` health | `CDP_PORT`, uses `wsl-host-ip.sh` |
 | `scripts/mcp-wrapper.sh` | MCP entry for `opencode.jsonc` | builds `npx @playwright/mcp --isolated --cdp-endpoint ... --secrets --init-page --storage-state --caps devtools` |
+| `scripts/install.sh` | One-command installer | clones into `~/.opencode/wsl-chrome`, `npm install`, writes `./opencode.jsonc` |
 | `scripts/init-auth.ts` | `--init-page` auto-login hook | reads `AUTH_*` from `process.env` (via `--secrets`) |
 | `scripts/setup-mcp.sh` | Idempotent installer | checks node, `npm install`, creates `.secrets.env`/`config/storage-state.json` |
 | `scripts/capture-storage-state.sh` | Manual login → `config/storage-state.json` | uses `playwright` headed |

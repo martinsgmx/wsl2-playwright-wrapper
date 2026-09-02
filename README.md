@@ -1,136 +1,99 @@
-# playwright-wrapper-mcp — Playwright MCP wrapper (WSL → Windows Brave)
+# playwright-wrapper-mcp — Playwright MCP wrapper (WSL → Windows browser)
 
-> Folder stays `wsl-chrome` on disk; package/docs name is `playwright-wrapper-mcp` (wrapper over `@playwright/mcp`, not `chrome-mcp`).
+> Folder stays `wsl-chrome` on disk; package/docs name is `playwright-wrapper-mcp`
+> (wrapper over `@playwright/mcp`, **not** `chrome-mcp`).
 
-Isolated, headed browser debugging: `opencode` runs in **WSL**, drives your **visible Windows Brave/Chrome** via CDP through a **Playwright MCP wrapper**. Every LLM session is **isolated** (fresh `BrowserContext` → no cookie bleed). Login gates are handled via config-driven auto-fill until a success redirect.
+Drive your **visible Windows Chrome/Brave/Edge** from `opencode` running in **WSL**, over
+CDP, without losing a single Playwright command — and keep every LLM session **isolated**.
 
-## What this repo is — and is not
+## How it works (CDP flow)
 
-This repo is **injection / config only** for WSL2. It is **not** a Playwright replacement:
-
-- It **keeps** the official `@playwright/mcp` install and the **full Playwright command set**
-  (`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_evaluate`,
-  `browser_console_messages`, `browser_network_requests`, `browser_take_screenshot`, …).
-- It **adds** the two things a fresh project is missing that cause the
-  `MCP error -32001: Request timed out`:
-  1. a **CDP launcher** for your visible Windows Brave/Chrome, and
-  2. a **`--cdp-endpoint http://localhost:9222`** pointer in the project's `opencode.jsonc`.
-
-So you can replicate this working flow in **any other project** without losing any Playwright
-tools. If you already installed Playwright per official docs (`npm i -D @playwright/mcp`),
-you only change `command` to add the CDP endpoint — see
-**[`docs/integrate-other-project.md`](docs/integrate-other-project.md)** for the copy-paste
-setup (Option A = just add CDP, Option B = full wrapper with isolation + auth).
-
-```
-WSL opencode ──bash scripts/mcp-wrapper.sh──► npx @playwright/mcp --isolated --cdp-endpoint http://localhost:9222
-                                                    --secrets .secrets.env --init-page scripts/init-auth.ts
-                                                         │
-Windows Brave  --remote-debugging-port=9222 ◄─────────────┘   headed window + isolated context
+```mermaid
+flowchart LR
+    subgraph WSL ["WSL (Linux)"]
+        OC["opencode TUI"] -->|npm i @playwright/mcp| MCP["Playwright MCP server"]
+        MCP -->|connectOverCDP| WS["ws://localhost:9222"]
+        WRAP["scripts/mcp-wrapper.sh<br/>--isolated --cdp-endpoint<br/>--secrets --init-page"]
+    end
+    subgraph WIN ["Windows host"]
+        WS --> BRAVE["Brave / Chrome / Edge<br/>launched with<br/>--remote-debugging-port=9222"]
+        BRAVE --> PROFILE["Playwright<br/>profile (isolated)"]
+    end
+    OC -.->|opencode.jsonc| WRAP
+    WRAP -.->|builds args| MCP
 ```
 
-## Install in OpenCode
+Flow in words:
 
-### Get the files
+1. `opencode.jsonc` tells OpenCode to spawn the wrapper (`bash scripts/mcp-wrapper.sh`).
+2. The wrapper builds `npx @playwright/mcp --cdp-endpoint http://localhost:9222 --isolated --caps devtools [--secrets --init-page --storage-state]`.
+3. Playwright MCP attaches to the **visible Windows browser** via CDP at `ws://localhost:9222`.
+4. Each session gets a **fresh isolated `BrowserContext`** — no cookie bleed between sessions.
+
+## ⚡ One-command install
+
+From **any** project directory in WSL2 (cloned **globally**, so it's out of your project's git
+tracking):
 
 ```bash
-# clone
-git clone https://github.com/martinsgmx/wsl-conf-mcp-chrome.git
-cd wsl-chrome
-
-# or copy into an existing project
-cp -r /path/to/wsl-chrome/opencode.jsonc ./opencode.jsonc
-cp -r /path/to/wsl-chrome/scripts ./scripts
-cp /path/to/wsl-chrome/.secrets.env.example ./.secrets.env.example
-mkdir -p config && cp /path/to/wsl-chrome/config/storage-state.example.json ./config/
+curl -fsSL https://raw.githubusercontent.com/martinsgmx/wsl2-playwright-wrapper/main/install.sh | bash
 ```
 
-Required: Node 18+, WSL2 mirrored (`wslinfo --networking-mode` → `mirrored`), Windows Brave/Chrome. See `docs/installation.md` for prereqs.
-
-### Install
+It: clones into `~/.opencode/wsl-chrome` → `npm install` (installs the `playwright` dep) →
+auto-writes `./opencode.jsonc` pointing OpenCode's MCP at the wrapper (confirms before
+overwriting) → creates `~/.opencode/wsl-chrome/.secrets.env` for auth. It **never forks or
+replaces `@playwright/mcp`** — you keep every Playwright command.
 
 ```bash
-# 1) Launch a Chromium browser with CDP (WSL or Windows double-click)
-bash scripts/launch-brave-debug.sh                 # BROWSER=auto → Brave (default)
+# launch a browser, verify, then run opencode
+bash ~/.opencode/wsl-chrome/scripts/launch-brave-debug.sh   # BROWSER=auto|chrome|edge
+bash ~/.opencode/wsl-chrome/scripts/check-cdp.sh
+opencode
+# in TUI:  use playwright to navigate to https://example.com/ and report console errors
+```
+
+> Overrides: `WSL_PW_INSTALL_DIR`, `WSL_PW_REPO_URL`, `OPENCODE_JSONC` — see `scripts/install.sh`.
+
+## Browser selection
+
+Chromium-family only (Firefox isn't CDP-attachable — it uses WebDriver BiDi).
+
+```bash
+bash scripts/launch-brave-debug.sh                 # BROWSER=auto  → Brave (default)
 BROWSER=chrome bash scripts/launch-brave-debug.sh  # Chrome
 BROWSER=edge  bash scripts/launch-brave-debug.sh   # Edge
-# or on Windows: double-click scripts/launch-brave-debug.cmd
-
-# 2) Verify CDP from WSL
-bash scripts/check-cdp.sh   # → ✓ CDP reachable — ws://localhost:9222/...
-curl http://127.0.0.1:9222/json/version
-
-# 3) Wire MCP (project-scoped, no global patch)
-bash scripts/setup-mcp.sh        # node check, npm install, creates .secrets.env + config/storage-state.json
-cp .secrets.env.example .secrets.env
-$EDITOR .secrets.env              # set AUTH_URL, AUTH_USERNAME, AUTH_PASSWORD, AUTH_SUCCESS_PATH
-chmod 600 .secrets.env
-
-# 4) Verify in OpenCode
-opencode mcp list                # playwright → connected (isolated)
-opencode mcp debug playwright    # not a remote server, shows local command
 ```
 
-`opencode.jsonc` is project-scoped — `opencode` merges `~/.config/opencode/opencode.jsonc` + `./opencode.jsonc` (project wins, per `https://opencode.ai/docs/config#precedence-order`). No global install needed; keep it in the repo.
+Each brand uses a **named `Playwright` profile** (`C:\Users\<you>\AppData\Local\Playwright\<browser>`)
+so launches never collide with your everyday browser profile — and re-launching while open
+reuses the existing CDP session. Override with `CDP_USER_DATA_DIR`.
 
-### Use in OpenCode
+## The one thing a project needs
 
-```bash
-opencode
-# in TUI:
-# > use playwright to navigate to https://example.com/ and report console errors
+If a project already has `@playwright/mcp` installed (`npm i -D @playwright/mcp`), you only
+add the CDP endpoint to its `opencode.jsonc` **command**:
+
+```jsonc
+{ "mcp": { "playwright": { "type": "local",
+    "command": ["bash", "/home/<you>/.opencode/wsl-chrome/scripts/mcp-wrapper.sh"],
+    "enabled": true, "timeout": 10000 } } }
 ```
 
-Every session is `--isolated` — see `docs/auth.md`. For first login with captcha/SSO, run `bash scripts/capture-storage-state.sh` once to seed `config/storage-state.json`.
+That fixes the `MCP error -32001: Request timed out` (MCP had no browser to talk to) and keeps
+`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_evaluate`,
+`browser_console_messages`, `browser_network_requests`, `browser_take_screenshot` — all of them.
 
-### Quickstart (60s) — same as above, condensed
+## Auth ("isolated" + login)
 
-**1) Launch Windows Brave with CDP**
+Every session is `--isolated` (fresh `BrowserContext` → no cookie bleed). To get past a login
+gate without typing each time:
 
-WSL:
+- **Auto-fill**: set `AUTH_URL`, `AUTH_USERNAME`, `AUTH_PASSWORD`, `AUTH_SUCCESS_PATH` in
+  `.secrets.env`; `init-auth.ts` fills the form until the redirect hits `AUTH_SUCCESS_PATH`.
+- **Seed cookies**: `bash scripts/capture-storage-state.sh` → `config/storage-state.json`, so
+  future sessions start already logged in.
 
-```bash
-bash scripts/launch-brave-debug.sh                 # BRAVE (default); use BROWSER=chrome|edge
-```
-
-Or Windows: double-click `scripts/launch-brave-debug.cmd`
-
-Verify:
-
-```bash
-bash scripts/check-cdp.sh   # → ✓ CDP reachable — ws://localhost:9222/...
-curl http://127.0.0.1:9222/json/version
-```
-
-**2) Install & configure (project-scoped)**
-
-```bash
-bash scripts/setup-mcp.sh        # node check, npm install, creates .secrets.env + config/storage-state.json
-cp .secrets.env.example .secrets.env
-# edit .secrets.env:
-#   AUTH_URL=http://localhost:3000/login
-#   AUTH_USERNAME=test@example.com
-#   AUTH_PASSWORD=test123
-#   AUTH_SUCCESS_PATH=**/dashboard**
-chmod 600 .secrets.env
-```
-
-Optional — pre-seed cookies so future isolated sessions skip the form:
-
-```bash
-bash scripts/capture-storage-state.sh   # opens headed browser, you log in once, press Enter → writes config/storage-state.json
-```
-
-**3) Run**
-
-```bash
-opencode mcp list                # playwright → enabled (isolated)
-bash scripts/smoke-test.sh       # CDP → example.com title
-bash scripts/test-auth.sh        # fixture login → dashboard (auto-fill until redirect)
-bash scripts/test-isolated.sh    # proves no bleed between sessions
-
-opencode                         # then in TUI: "use playwright to navigate to $AUTH_URL and report after login"
-```
+See `docs/auth.md`.
 
 ## Repo layout
 
@@ -138,33 +101,18 @@ opencode                         # then in TUI: "use playwright to navigate to $
 opencode.jsonc                 # project MCP (local → mcp-wrapper.sh, isolated)
 .secrets.env.example           # copy to .secrets.env (gitignored)
 config/storage-state.json      # gitignored seed cookies (optional)
-config/storage-state.example.json
 scripts/
+  install.sh                  # one-command installer (curl|bash → ~/.opencode/wsl-chrome)
   launch-brave-debug.ps1/.cmd/.sh
   wsl-host-ip.sh / check-cdp.sh / mcp-wrapper.sh
-  init-auth.ts                 # auto-login until AUTH_SUCCESS_PATH
-  setup-mcp.sh / capture-storage-state.sh
-  smoke-test.sh / test-isolated.sh / test-auth.sh
-test/fixtures/login/server.js  # tiny login→dashboard fixture for test-auth
-docs/
-  installation.md / configuration.md / auth.md / testing.md / troubleshooting.md
-  integrate-other-project.md   # add CDP-only to any project, keep Playwright commands
+  init-auth.ts                # auto-login until AUTH_SUCCESS_PATH
+  setup-mcp.sh / capture-storage-state.sh / smoke-test.sh / test-isolated.sh / test-auth.sh
+test/fixtures/login/server.js  # tiny login→dashboard fixture
+docs/  configuration.md · auth.md · installation.md · install.md · integrate-other-project.md · testing.md · troubleshooting.md
 ```
 
-## Configuration
+## Docs
 
-See `docs/configuration.md` for `opencode.jsonc`, `mcp-wrapper.sh` flags, and `.secrets.env` vars (`AUTH_*`, `CDP_PORT`, `AUTH_SUCCESS_PATH` glob like `**/dashboard**`).
-
-Use in another project (keep official Playwright install): `docs/integrate-other-project.md`.
-
-Isolation note: every `browser_close` wipes the session. Next session re-logins via `init-auth.ts` or seeds from `config/storage-state.json` (faster). See `docs/auth.md`.
-
-## Installation & testing
-
-- Install: `docs/installation.md`
-- Tests: `docs/testing.md` — 5 checks: `check-cdp`, `mcp list`, `smoke`, `test-isolated`, `test-auth`.
-
-## Troubleshooting
-
-- Port in use / firewall / NAT vs mirrored / Brave update → `docs/troubleshooting.md`
-- `appendWindowsPath=false` is handled (scripts use absolute `/mnt/c/Windows/.../powershell.exe`).
+- Install: `docs/install.md` (one-command) · `docs/installation.md` (manual)
+- Config: `docs/configuration.md` · Auth: `docs/auth.md` · Use in another project: `docs/integrate-other-project.md`
+- Tests: `docs/testing.md` · Troubleshooting: `docs/troubleshooting.md`

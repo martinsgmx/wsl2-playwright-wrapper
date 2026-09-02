@@ -4,6 +4,24 @@
 
 Isolated, headed browser debugging: `opencode` runs in **WSL**, drives your **visible Windows Brave/Chrome** via CDP through a **Playwright MCP wrapper**. Every LLM session is **isolated** (fresh `BrowserContext` → no cookie bleed). Login gates are handled via config-driven auto-fill until a success redirect.
 
+## What this repo is — and is not
+
+This repo is **injection / config only** for WSL2. It is **not** a Playwright replacement:
+
+- It **keeps** the official `@playwright/mcp` install and the **full Playwright command set**
+  (`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_evaluate`,
+  `browser_console_messages`, `browser_network_requests`, `browser_take_screenshot`, …).
+- It **adds** the two things a fresh project is missing that cause the
+  `MCP error -32001: Request timed out`:
+  1. a **CDP launcher** for your visible Windows Brave/Chrome, and
+  2. a **`--cdp-endpoint http://localhost:9222`** pointer in the project's `opencode.jsonc`.
+
+So you can replicate this working flow in **any other project** without losing any Playwright
+tools. If you already installed Playwright per official docs (`npm i -D @playwright/mcp`),
+you only change `command` to add the CDP endpoint — see
+**[`docs/integrate-other-project.md`](docs/integrate-other-project.md)** for the copy-paste
+setup (Option A = just add CDP, Option B = full wrapper with isolation + auth).
+
 ```
 WSL opencode ──bash scripts/mcp-wrapper.sh──► npx @playwright/mcp --isolated --cdp-endpoint http://localhost:9222
                                                     --secrets .secrets.env --init-page scripts/init-auth.ts
@@ -128,11 +146,14 @@ scripts/
 test/fixtures/login/server.js  # tiny login→dashboard fixture for test-auth
 docs/
   installation.md / configuration.md / auth.md / testing.md / troubleshooting.md
+  integrate-other-project.md   # add CDP-only to any project, keep Playwright commands
 ```
 
 ## Configuration
 
 See `docs/configuration.md` for `opencode.jsonc`, `mcp-wrapper.sh` flags, and `.secrets.env` vars (`AUTH_*`, `CDP_PORT`, `AUTH_SUCCESS_PATH` glob like `**/dashboard**`).
+
+Use in another project (keep official Playwright install): `docs/integrate-other-project.md`.
 
 Isolation note: every `browser_close` wipes the session. Next session re-logins via `init-auth.ts` or seeds from `config/storage-state.json` (faster). See `docs/auth.md`.
 

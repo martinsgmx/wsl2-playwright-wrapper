@@ -79,6 +79,10 @@ File is `chmod 600` and **gitignored**. Keep `.secrets.env.example` committed wi
 
 `AUTH_SUCCESS_PATH` is a Playwright glob: `**/dashboard**` matches `https://app.example.com/dashboard?x=1`. Use full URL if you need exact host.
 
-## Per-project overrides
+## Use in another project
 
-Each project that wants isolated browsing can copy `opencode.jsonc` + `scripts/mcp-wrapper.sh` pattern, or set `OPENCODE_CONFIG=/path/to/custom.jsonc`. The `wsl-chrome` folder on disk is the reference implementation of `playwright-wrapper-mcp`.
+This repo is injection/config only. If another project already has `@playwright/mcp` installed
+per official docs (`npm i -D @playwright/mcp`), you do **not** reinstall or fork the MCP — you
+only add a CDP launcher + a `--cdp-endpoint http://localhost:9222` flag to its `opencode.jsonc`
+command. See **`integrate-other-project.md`** for the copy-paste setup (Option A = just CDP,
+Option B = full wrapper with `--isolated` + auth).

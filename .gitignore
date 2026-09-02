@@ -1,0 +1,24 @@
+# secrets & state (never commit creds or session cookies)
+.secrets.env
+.secrets.env.local
+config/storage-state.json
+config/*.storage-state.json
+.env
+.env.local
+
+# deps
+node_modules/
+package-lock.json
+bun.lock
+# playwright cache
+.playwright/
+test-results/
+playwright-report/
+# opencode local
+.opencode/
+# OS
+# logs & temp artifacts from scripts
+*.log
+/tmp/opencode/
+wsl-chrome-launch-brave-debug.ps1
+*.tmp

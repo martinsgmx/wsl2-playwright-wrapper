@@ -1,0 +1,24 @@
+{
+  // playwright-wrapper-mcp — project-scoped MCP config (folder stays wsl-chrome on disk).
+  // opencode merges global + project (project wins).
+  // See https://opencode.ai/docs/config/#precedence-order and docs/configuration.md
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      // mcp-wrapper.sh auto-detects WSL networking (mirrored vs NAT),
+      // picks CDP endpoint, and forwards --isolated --secrets --init-page --storage-state
+      "command": ["bash", "scripts/mcp-wrapper.sh"],
+      "enabled": true,
+      // bump for auth redirects (login → dashboard can take >5s)
+      "timeout": 10000
+    }
+  }
+  // Optional: scope tools to a dedicated agent to avoid context bloat
+  // "agent": {
+  //   "debug": {
+  //     "description": "Browser debugger — isolated Playwright",
+  //     "tools": { "playwright*": true }
+  //   }
+  // }
+}

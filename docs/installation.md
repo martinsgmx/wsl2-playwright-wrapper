@@ -3,16 +3,18 @@
 ## Prereqs
 
 - **WSL2** with `mirrored` networking (this repo's box is `mirrored` — `cat /etc/wsl.conf`, `wslinfo --networking-mode`). NAT also works via fallback.
-- **Windows Brave/Chrome/Edge** — Brave at `C:\Program Files\BraveSoftware\...` auto-detected, fallback to Chrome/Edge.
+- **Windows Chrome/Brave/Edge** (Chromium-family; the CDP flow). Brave at `C:\Program Files\BraveSoftware\...` auto-detected when `BROWSER=auto`, or choose `BROWSER=chrome` / `BROWSER=edge`. Firefox is NOT supported (it uses WebDriver BiDi, not CDP).
 - **Node 18+** in WSL (`node -v`), `npm`, `curl`, `python3` (for JSON pretty-print).
 - **opencode** `1.18+` (`opencode --version`) — https://opencode.ai/docs
 
-## 1) Launch Brave with CDP
+## 1) Launch a Chromium browser with CDP
 
 **From WSL:**
 
 ```bash
-bash scripts/launch-brave-debug.sh
+bash scripts/launch-brave-debug.sh                      # BROWSER=auto → Brave
+BROWSER=chrome bash scripts/launch-brave-debug.sh       # Chrome
+BROWSER=edge  bash scripts/launch-brave-debug.sh        # Edge
 # optional: CDP_PORT=9223 bash scripts/launch-brave-debug.sh
 ```
 
@@ -20,7 +22,7 @@ bash scripts/launch-brave-debug.sh
 
 Double-click `scripts/launch-brave-debug.cmd` (calls `launch-brave-debug.ps1` with `-ExecutionPolicy Bypass`).
 
-What it does: finds `brave.exe` → `chrome.exe` → `msedge.exe`, starts with `--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1`, polls `http://localhost:9222/json/version`.
+What it does: starts the chosen browser with `--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1`, polls `http://localhost:9222/json/version`. Each brand uses a dedicated named profile at `C:\Users\<you>\AppData\Local\Playwright\<browser>` so launches never collide with your everyday browser profile (and re-launching while open reuses the existing CDP session).
 
 **Verify from WSL:**
 

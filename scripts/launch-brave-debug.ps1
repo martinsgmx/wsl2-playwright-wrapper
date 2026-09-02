@@ -1,10 +1,12 @@
 param(
   [int]$Port = 9222,
   [string]$UserDataDir = "",
-  [string]$Browser = "auto"
+  [string]$Browser = "auto"   # auto | brave | chrome | edge
 )
 
 # Finds Brave/Chrome/Edge and launches with --remote-debugging-port for WSL CDP attach.
+# Chromium-family only (Firefox isn't CDP-attachable — it uses WebDriver BiDi, which this
+# launcher does not target).
 # Mirrored WSL → --remote-debugging-address=127.0.0.1; NAT fallback would be 0.0.0.0 (not default).
 
 function Find-Browser {

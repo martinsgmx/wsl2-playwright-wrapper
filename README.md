@@ -50,8 +50,10 @@ Required: Node 18+, WSL2 mirrored (`wslinfo --networking-mode` → `mirrored`), 
 ### Install
 
 ```bash
-# 1) Launch Windows Brave with CDP (WSL or Windows double-click)
-bash scripts/launch-brave-debug.sh
+# 1) Launch a Chromium browser with CDP (WSL or Windows double-click)
+bash scripts/launch-brave-debug.sh                 # BROWSER=auto → Brave (default)
+BROWSER=chrome bash scripts/launch-brave-debug.sh  # Chrome
+BROWSER=edge  bash scripts/launch-brave-debug.sh   # Edge
 # or on Windows: double-click scripts/launch-brave-debug.cmd
 
 # 2) Verify CDP from WSL
@@ -88,7 +90,7 @@ Every session is `--isolated` — see `docs/auth.md`. For first login with captc
 WSL:
 
 ```bash
-bash scripts/launch-brave-debug.sh
+bash scripts/launch-brave-debug.sh                 # BRAVE (default); use BROWSER=chrome|edge
 ```
 
 Or Windows: double-click `scripts/launch-brave-debug.cmd`

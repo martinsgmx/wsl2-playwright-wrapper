@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# WSL shim that launches Windows Brave with CDP. Handles appendWindowsPath=false and UNC issues.
+# WSL shim that launches Windows Chrome/Brave/Edge with CDP. Handles appendWindowsPath=false and UNC issues.
+# Chromium-family only. Env: CDP_PORT, CDP_ADDR, BROWSER (auto|brave|chrome|edge), CDP_USER_DATA_DIR.
+# IMPORTANT: always use a dedicated --user-data-dir. If we launched on the browser's real
+# default profile while that browser is already open, the new instance just focuses the
+# existing one and IGNORES --remote-debugging-port (=> CDP never binds). So each CDP launch
+# uses a stable, named "Playwright" profile under %LOCALAPPDATA% (per browser) so the port
+# always binds and never collides with your everyday browser profile.
 PORT="${CDP_PORT:-9222}"
+BROWSER="${BROWSER:-auto}"
 ADDR="127.0.0.1"
 if grep -q "networkingMode=mirrored" /etc/wsl.conf 2>/dev/null; then
   ADDR="127.0.0.1"
@@ -9,12 +16,26 @@ else
   ADDR="${CDP_ADDR:-127.0.0.1}"
 fi
 
+# Named "Playwright" profile per browser so launches don't collide with real profiles.
+# Override entirely with CDP_USER_DATA_DIR (Windows or WSL path you supply).
+USER_DATA_DIR="${CDP_USER_DATA_DIR:-${USER_DATA_DIR:-}}"
+
 POW="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 CMD="/mnt/c/Windows/System32/cmd.exe"
 PS1_WSL="$(dirname "$0")/launch-brave-debug.ps1"
 PS1_WSL_ABS="$(realpath "$PS1_WSL" 2>/dev/null || echo "$PS1_WSL")"
 
-echo "> Launching Windows Brave with CDP port $PORT (addr $ADDR) ..."
+# Resolve Windows LOCALAPPDATA (global) for the stable Playwright profile dir
+LOCAL_APPDATA="$("$POW" -Command "echo \$env:LOCALAPPDATA" 2>/dev/null | tr -d '\r' | head -n1 || echo "")"
+if [[ -z "$LOCAL_APPDATA" ]]; then
+  LOCAL_APPDATA="C:\\Users\\Denim\\AppData\\Local"
+fi
+# Normalize browser choice into a safe folder token (auto -> brave by default)
+BROWSER_SAFE="${BROWSER}"
+if [[ "$BROWSER_SAFE" == "auto" ]]; then BROWSER_SAFE="brave"; fi
+PROFILE_WIN="${USER_DATA_DIR:-${LOCAL_APPDATA}\\Playwright\\${BROWSER_SAFE}}"
+
+echo "> Launching Windows browser with CDP port $PORT (addr $ADDR), BROWSER=$BROWSER ..."
 
 # Helper: get Windows TEMP dir and copy PS1 there to avoid UNC execution issues
 launch_via_powershell() {
@@ -42,8 +63,13 @@ launch_via_powershell() {
     win_tmp_ps1="$win_temp\\wsl-chrome-launch-brave-debug.ps1"
   fi
   echo "> Running PowerShell from $win_tmp_ps1"
-  # Run from C:\ to avoid UNC current directory issue; use -File with Windows path
-  "$POW" -NoProfile -ExecutionPolicy Bypass -File "$win_tmp_ps1" -Port "$PORT"
+
+  local extra_args=()
+  if [[ "$BROWSER" != "auto" ]]; then
+    extra_args+=("-Browser" "$BROWSER")
+  fi
+  extra_args+=("-UserDataDir" "$PROFILE_WIN")
+  "$POW" -NoProfile -ExecutionPolicy Bypass -File "$win_tmp_ps1" -Port "$PORT" "${extra_args[@]}"
 }
 
 POW_OK=false
@@ -59,22 +85,38 @@ if [[ -x "$POW" ]]; then
       echo "> PowerShell launch failed, trying cmd.exe fallback..."
       BRAVE_WIN="C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
       BRAVE_WSL="/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
-      if [[ -f "$BRAVE_WSL" ]]; then
-        "$CMD" /c "cd /d C:\\ && start \"\" \"$BRAVE_WIN\" --remote-debugging-port=$PORT --remote-debugging-address=$ADDR --no-first-run --no-default-browser-check" || true
+      CHROME_WIN="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      CHROME_WSL="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+      EDGE_WIN="C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+      EDGE_WSL="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+      chosen_win="" chosen_wsl=""
+      case "$BROWSER" in
+        chrome) chosen_win="$CHROME_WIN"; chosen_wsl="$CHROME_WSL";;
+        edge)   chosen_win="$EDGE_WIN"; chosen_wsl="$EDGE_WSL";;
+        brave|auto|*) chosen_win="$BRAVE_WIN"; chosen_wsl="$BRAVE_WSL";;
+      esac
+      if [[ -n "$chosen_wsl" ]] && [[ -f "$chosen_wsl" ]]; then
+        "$CMD" /c "cd /d C:\\ && start \"\" \"$chosen_win\" --remote-debugging-port=$PORT --remote-debugging-address=$ADDR --user-data-dir=\"$PROFILE_WIN\" --no-first-run --no-default-browser-check" || true
       else
-        CHROME_WIN="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-        CHROME_WSL="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
-        if [[ -f "$CHROME_WSL" ]]; then
-          "$CMD" /c "cd /d C:\\ && start \"\" \"$CHROME_WIN\" --remote-debugging-port=$PORT --remote-debugging-address=$ADDR --no-first-run --no-default-browser-check" || true
-        else
-          echo "Brave not found at $BRAVE_WSL and Chrome fallback also missing"
-        fi
+        echo "Browser '$BROWSER' not found at expected path: $chosen_wsl"
+        POW_OK=false
       fi
     fi
   fi
 elif [[ -x "$CMD" ]]; then
   BRAVE_WIN="C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
-  "$CMD" /c "cd /d C:\\ && start \"\" \"$BRAVE_WIN\" --remote-debugging-port=$PORT --remote-debugging-address=$ADDR --no-first-run --no-default-browser-check"
+  BRAVE_WSL="/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+  CHROME_WIN="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  CHROME_WSL="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+  EDGE_WIN="C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+  EDGE_WSL="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  chosen_win="" chosen_wsl=""
+  case "$BROWSER" in
+    chrome) chosen_win="$CHROME_WIN"; chosen_wsl="$CHROME_WSL";;
+    edge)   chosen_win="$EDGE_WIN"; chosen_wsl="$EDGE_WSL";;
+    brave|auto|*) chosen_win="$BRAVE_WIN"; chosen_wsl="$BRAVE_WSL";;
+  esac
+  "$CMD" /c "cd /d C:\\ && start \"\" \"$chosen_win\" --remote-debugging-port=$PORT --remote-debugging-address=$ADDR --user-data-dir=\"$PROFILE_WIN\" --no-first-run --no-default-browser-check" || true
 else
   echo "Cannot find powershell.exe nor cmd.exe at expected /mnt/c/Windows/... — is /mnt/c mounted? ls /mnt/c"
   exit 1

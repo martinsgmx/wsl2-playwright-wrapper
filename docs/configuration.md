@@ -79,6 +79,47 @@ File is `chmod 600` and **gitignored**. Keep `.secrets.env.example` committed wi
 
 `AUTH_SUCCESS_PATH` is a Playwright glob: `**/dashboard**` matches `https://app.example.com/dashboard?x=1`. Use full URL if you need exact host.
 
+## Browser selection & the named "Playwright" profile
+
+The launcher is **Chromium-family only** (Chrome / Brave / Edge). Firefox is not CDP-attachable
+(it uses WebDriver BiDi), so it's out of scope.
+
+Pick the browser with `BROWSER` (default `auto` → Brave):
+
+```bash
+BROWSER=chrome bash scripts/launch-brave-debug.sh   # Chrome
+BROWSER=brave  bash scripts/launch-brave-debug.sh   # Brave (default)
+BROWSER=edge   bash scripts/launch-brave-debug.sh   # Edge
+```
+
+Each launch uses a **stable, named "Playwright" profile** on the Windows host so it never
+collides with your everyday browser profile:
+
+```
+C:\Users\<you>\AppData\Local\Playwright\chrome
+C:\Users\<you>\AppData\Local\Playwright\brave
+C:\Users\<you>\AppData\Local\Playwright\edge
+```
+
+Why this matters: launching Chrome/Brave/Edge on the **default** profile while that browser is
+already open just focuses the existing window and **ignores `--remote-debugging-port`** (CDP
+never binds). Using a dedicated `Playwright\<browser>` profile means:
+
+- the port always binds reliably on a fresh launch, and
+- re-launching the same browser while it's already open detects the port is in use and **reuses
+  the existing CDP session** (no duplicate/conflicting instance).
+
+> The "Playwright" profile is **persistent** — it's a real Windows profile dir, not wiped per
+> session. OpenCode/Playwright-MCP isolation (`--isolated`) still gives fresh `BrowserContext`s
+> on top of it; if you want a truly clean profile each run, delete the dir between sessions or
+> set `CDP_USER_DATA_DIR` to a temp path you manage.
+
+Override the profile dir entirely with `CDP_USER_DATA_DIR`:
+
+```bash
+CDP_USER_DATA_DIR="C:\\temp\\my-profile" BROWSER=chrome bash scripts/launch-brave-debug.sh
+```
+
 ## Use in another project
 
 This repo is injection/config only. If another project already has `@playwright/mcp` installed

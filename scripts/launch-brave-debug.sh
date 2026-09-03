@@ -54,13 +54,13 @@ launch_via_powershell() {
     wsl_temp="/mnt/c/Users/Denim/AppData/Local/Temp"
   fi
   mkdir -p "$wsl_temp" 2>/dev/null || true
-  local tmp_ps1="$wsl_temp/wsl-chrome-launch-brave-debug.ps1"
+  local tmp_ps1="$wsl_temp/wsl-browser-launch-brave-debug.ps1"
   cp -f "$PS1_WSL_ABS" "$tmp_ps1" 2>/dev/null || cp -f "$PS1_WSL" "$tmp_ps1"
   local win_tmp_ps1
   if command -v wslpath >/dev/null 2>&1; then
-    win_tmp_ps1="$(wslpath -w "$tmp_ps1" 2>/dev/null || echo "$win_temp\\wsl-chrome-launch-brave-debug.ps1")"
+    win_tmp_ps1="$(wslpath -w "$tmp_ps1" 2>/dev/null || echo "$win_temp\\wsl-browser-launch-brave-debug.ps1")"
   else
-    win_tmp_ps1="$win_temp\\wsl-chrome-launch-brave-debug.ps1"
+    win_tmp_ps1="$win_temp\\wsl-browser-launch-brave-debug.ps1"
   fi
   echo "> Running PowerShell from $win_tmp_ps1"
 

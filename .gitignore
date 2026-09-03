@@ -21,5 +21,5 @@ playwright-report/
 # logs & temp artifacts from scripts
 *.log
 /tmp/opencode/
-wsl-chrome-launch-brave-debug.ps1
+wsl-browser-launch-brave-debug.ps1
 *.tmp

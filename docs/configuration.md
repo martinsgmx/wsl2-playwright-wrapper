@@ -87,9 +87,9 @@ The launcher is **Chromium-family only** (Chrome / Brave / Edge). Firefox is not
 Pick the browser with `BROWSER` (default `auto` → Brave):
 
 ```bash
-BROWSER=chrome bash scripts/launch-brave-debug.sh   # Chrome
-BROWSER=brave  bash scripts/launch-brave-debug.sh   # Brave (default)
-BROWSER=edge   bash scripts/launch-brave-debug.sh   # Edge
+BROWSER=chrome bash scripts/launch-browser-debug.sh   # Chrome
+BROWSER=brave  bash scripts/launch-browser-debug.sh   # Brave (default)
+BROWSER=edge   bash scripts/launch-browser-debug.sh   # Edge
 ```
 
 Each launch uses a **stable, named "Playwright" profile** on the Windows host so it never
@@ -117,7 +117,7 @@ never binds). Using a dedicated `Playwright\<browser>` profile means:
 Override the profile dir entirely with `CDP_USER_DATA_DIR`:
 
 ```bash
-CDP_USER_DATA_DIR="C:\\temp\\my-profile" BROWSER=chrome bash scripts/launch-brave-debug.sh
+CDP_USER_DATA_DIR="C:\\temp\\my-profile" BROWSER=chrome bash scripts/launch-browser-debug.sh
 ```
 
 ## Use in another project

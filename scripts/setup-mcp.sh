@@ -54,12 +54,12 @@ else
 fi
 
 # 8) CDP check (non-fatal)
-bash scripts/check-cdp.sh 2>&1 || echo "  CDP not up yet — launch Brave: bash scripts/launch-brave-debug.sh  or double-click scripts/launch-brave-debug.cmd on Windows"
+bash scripts/check-cdp.sh 2>&1 || echo "  CDP not up yet — launch Brave: bash scripts/launch-browser-debug.sh  or double-click scripts/launch-browser-debug.cmd on Windows"
 
 echo ""
 echo "✓ setup done"
 echo "  Next:"
-echo "    1) bash scripts/launch-brave-debug.sh   # or double-click .cmd on Windows"
+echo "    1) bash scripts/launch-browser-debug.sh   # or double-click .cmd on Windows"
 echo "    2) bash scripts/check-cdp.sh"
 echo "    3) opencode                              # then: use playwright to navigate to \$AUTH_URL"
 echo "    4) bash scripts/smoke-test.sh  |  bash scripts/test-auth.sh"

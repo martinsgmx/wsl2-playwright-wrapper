@@ -4,9 +4,9 @@ All scripts are `chmod +x`, `set -euo pipefail`, and use absolute Windows paths 
 
 | Script | Purpose | Key flags / env |
 |---|---|---|
-| `scripts/launch-brave-debug.ps1` | Windows PowerShell launcher | `-Port 9222 -Browser auto|brave|chrome|edge -UserDataDir ""` |
-| `scripts/launch-brave-debug.cmd` | Batch double-click wrapper | calls `.ps1` with Bypass |
-| `scripts/launch-brave-debug.sh` | WSL shim | `CDP_PORT`, `CDP_ADDR`, `BROWSER`, `CDP_USER_DATA_DIR` |
+| `scripts/launch-browser-debug.ps1` | Windows PowerShell launcher | `-Port 9222 -Browser auto|brave|chrome|edge -UserDataDir ""` |
+| `scripts/launch-browser-debug.cmd` | Batch double-click wrapper | calls `.ps1` with Bypass |
+| `scripts/launch-browser-debug.sh` | WSL shim | `CDP_PORT`, `CDP_ADDR`, `BROWSER`, `CDP_USER_DATA_DIR` |
 | `scripts/wsl-host-ip.sh` | Prints `localhost` (mirrored) or gateway (NAT) | respects `CDP_HOST` |
 | `scripts/check-cdp.sh` | `curl /json/version` health | `CDP_PORT`, uses `wsl-host-ip.sh` |
 | `scripts/mcp-wrapper.sh` | MCP entry for `opencode.jsonc` | builds `npx @playwright/mcp --isolated --cdp-endpoint ... --secrets --init-page --storage-state --caps devtools` |
@@ -22,4 +22,4 @@ Logs: `check-cdp` JSON to stdout, fixture logs to `/tmp/opencode/fixture-test-au
 
 Common env: `CDP_PORT=9222`, `CDP_HOST`, `BROWSER=auto|brave|chrome|edge`, `CDP_USER_DATA_DIR`, `AUTH_URL`, `AUTH_USERNAME`, `AUTH_PASSWORD`, `AUTH_SUCCESS_PATH="**/dashboard**"`, `AUTH_USER_SELECTOR`, etc.
 
-Run: `bash scripts/<name>.sh` from WSL, or double-click `.cmd` on Windows. Choose the browser with `BROWSER=chrome bash scripts/launch-brave-debug.sh` (default `auto` → Brave). Chromium-family only (Chrome/Brave/Edge); Firefox isn't CDP-attachable.
+Run: `bash scripts/<name>.sh` from WSL, or double-click `.cmd` on Windows. Choose the browser with `BROWSER=chrome bash scripts/launch-browser-debug.sh` (default `auto` → Brave). Chromium-family only (Chrome/Brave/Edge); Firefox isn't CDP-attachable.

@@ -43,7 +43,7 @@ replaces `@playwright/mcp`** — you keep every Playwright command.
 
 ```bash
 # launch a browser, verify, then run opencode
-bash ~/.opencode/wsl-chrome/scripts/launch-brave-debug.sh   # BROWSER=auto|chrome|edge
+bash ~/.opencode/wsl-chrome/scripts/launch-browser-debug.sh   # BROWSER=auto|chrome|edge
 bash ~/.opencode/wsl-chrome/scripts/check-cdp.sh
 opencode
 # in TUI:  use playwright to navigate to https://example.com/ and report console errors
@@ -56,9 +56,9 @@ opencode
 Chromium-family only (Firefox isn't CDP-attachable — it uses WebDriver BiDi).
 
 ```bash
-bash scripts/launch-brave-debug.sh                 # BROWSER=auto  → Brave (default)
-BROWSER=chrome bash scripts/launch-brave-debug.sh  # Chrome
-BROWSER=edge  bash scripts/launch-brave-debug.sh   # Edge
+bash scripts/launch-browser-debug.sh                 # BROWSER=auto  → Brave (default)
+BROWSER=chrome bash scripts/launch-browser-debug.sh  # Chrome
+BROWSER=edge  bash scripts/launch-browser-debug.sh   # Edge
 ```
 
 Each brand uses a **named `Playwright` profile** (`C:\Users\<you>\AppData\Local\Playwright\<browser>`)
@@ -110,7 +110,7 @@ opencode.jsonc                 # project MCP (local → mcp-wrapper.sh, isolated
 config/storage-state.json      # gitignored seed cookies (optional)
 scripts/
   install.sh                  # one-command installer (curl|bash → ~/.opencode/wsl-chrome)
-  launch-brave-debug.ps1/.cmd/.sh
+  launch-browser-debug.ps1/.cmd/.sh
   wsl-host-ip.sh / check-cdp.sh / mcp-wrapper.sh
   init-auth.ts                # auto-login until AUTH_SUCCESS_PATH
   setup-mcp.sh / capture-storage-state.sh / smoke-test.sh / test-isolated.sh / test-auth.sh

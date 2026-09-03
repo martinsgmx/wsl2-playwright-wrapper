@@ -22,7 +22,7 @@ USER_DATA_DIR="${CDP_USER_DATA_DIR:-${USER_DATA_DIR:-}}"
 
 POW="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 CMD="/mnt/c/Windows/System32/cmd.exe"
-PS1_WSL="$(dirname "$0")/launch-brave-debug.ps1"
+PS1_WSL="$(dirname "$0")/launch-browser-debug.ps1"
 PS1_WSL_ABS="$(realpath "$PS1_WSL" 2>/dev/null || echo "$PS1_WSL")"
 
 # Resolve Windows LOCALAPPDATA (global) for the stable Playwright profile dir
@@ -54,13 +54,13 @@ launch_via_powershell() {
     wsl_temp="/mnt/c/Users/Denim/AppData/Local/Temp"
   fi
   mkdir -p "$wsl_temp" 2>/dev/null || true
-  local tmp_ps1="$wsl_temp/wsl-browser-launch-brave-debug.ps1"
+  local tmp_ps1="$wsl_temp/wsl-browser-launch-browser-debug.ps1"
   cp -f "$PS1_WSL_ABS" "$tmp_ps1" 2>/dev/null || cp -f "$PS1_WSL" "$tmp_ps1"
   local win_tmp_ps1
   if command -v wslpath >/dev/null 2>&1; then
-    win_tmp_ps1="$(wslpath -w "$tmp_ps1" 2>/dev/null || echo "$win_temp\\wsl-browser-launch-brave-debug.ps1")"
+    win_tmp_ps1="$(wslpath -w "$tmp_ps1" 2>/dev/null || echo "$win_temp\\wsl-browser-launch-browser-debug.ps1")"
   else
-    win_tmp_ps1="$win_temp\\wsl-browser-launch-brave-debug.ps1"
+    win_tmp_ps1="$win_temp\\wsl-browser-launch-browser-debug.ps1"
   fi
   echo "> Running PowerShell from $win_tmp_ps1"
 
@@ -132,5 +132,5 @@ for i in {1..20}; do
   fi
   sleep 0.5
 done
-echo "CDP not responding after 10s — try double-clicking scripts/launch-brave-debug.cmd on Windows side, then run bash scripts/check-cdp.sh"
+echo "CDP not responding after 10s — try double-clicking scripts/launch-browser-debug.cmd on Windows side, then run bash scripts/check-cdp.sh"
 exit 1

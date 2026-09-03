@@ -4,7 +4,7 @@
 
 | # | Command | Proves | Needs |
 |---|---|---|---|
-| 1 | `bash scripts/check-cdp.sh` | Brave CDP reachable from WSL (`ws://...`) | Brave launched via `launch-brave-debug.*` |
+| 1 | `bash scripts/check-cdp.sh` | Brave CDP reachable from WSL (`ws://...`) | Brave launched via `launch-browser-debug.*` |
 | 2 | `bash scripts/setup-mcp.sh && opencode mcp list` | `@playwright/mcp` installed, `opencode.jsonc` valid | Node 18+, opencode |
 | 3 | `bash scripts/smoke-test.sh` | `chromium.connectOverCDP → goto example.com → title` in isolated context | `check-cdp` passes |
 | 4 | `bash scripts/test-isolated.sh` | `--isolated` wipes cookies between sessions (no bleed) | `check-cdp` passes |

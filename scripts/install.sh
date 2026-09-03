@@ -17,7 +17,7 @@ set -euo pipefail
 #   curl -fsSL https://raw.githubusercontent.com/martinsgmx/wsl2-playwright-wrapper/main/install.sh | bash
 #   # or, once cloned:  bash ~/.opencode/wsl-chrome/scripts/install.sh
 #
-# After: bash ~/.opencode/wsl-chrome/scripts/launch-brave-debug.sh && opencode
+# After: bash ~/.opencode/wsl-chrome/scripts/launch-browser-debug.sh && opencode
 # =============================================================================
 
 REPO_URL="${WSL_PW_REPO_URL:-https://github.com/martinsgmx/wsl2-playwright-wrapper.git}"
@@ -91,12 +91,12 @@ if [[ ! -f "$INSTALL_DIR/.secrets.env" ]]; then
 fi
 
 ( cd "$INSTALL_DIR" && bash scripts/check-cdp.sh 2>&1 || \
-  echo "  CDP not up yet — launch a browser: bash $INSTALL_DIR/scripts/launch-brave-debug.sh" )
+  echo "  CDP not up yet — launch a browser: bash $INSTALL_DIR/scripts/launch-browser-debug.sh" )
 
 echo ""
 echo "✓ done."
 echo "  Next:"
-echo "    1) bash $INSTALL_DIR/scripts/launch-brave-debug.sh   # BROWSER=auto|chrome|edge"
+echo "    1) bash $INSTALL_DIR/scripts/launch-browser-debug.sh   # BROWSER=auto|chrome|edge"
 echo "    2) opencode"
 echo "    3) in the TUI:   use playwright to navigate to https://example.com/ and report console errors"
 echo ""

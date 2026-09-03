@@ -4,7 +4,7 @@ set -euo pipefail
 # Used by opencode.jsonc: ["bash", "scripts/mcp-wrapper.sh"] (folder stays wsl-chrome on disk)
 # Env: CDP_PORT, CDP_HOST, AUTH_* (from .secrets.env via --secrets)
 # Note: Chromium-family (Brave/Chrome/Edge) attach via CDP. Firefox does NOT support CDP
-# (WebDriver BiDi), so don't launch Firefox for --cdp-endpoint — see launch-brave-debug.ps1.
+# (WebDriver BiDi), so don't launch Firefox for --cdp-endpoint — see launch-browser-debug.ps1.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

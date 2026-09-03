@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "→ smoke-test: CDP + Playwright connectOverCDP + isolated navigation"
 if ! bash "$ROOT/scripts/check-cdp.sh" 2>&1; then
   echo "  (CDP not reachable — running direct headless fallback to prove Playwright works)"
-  echo "  To test full CDP: bash scripts/launch-brave-debug.sh && bash scripts/smoke-test.sh"
+  echo "  To test full CDP: bash scripts/launch-browser-debug.sh && bash scripts/smoke-test.sh"
   node --input-type=module << 'FALLBACK'
 import { chromium } from 'playwright';
 const b = await chromium.launch({ headless: true });

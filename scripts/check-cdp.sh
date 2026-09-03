@@ -17,7 +17,7 @@ if [[ -z "$RESP" ]]; then
   echo "✗ CDP not reachable at $ENDPOINT"
   echo ""
   echo "  Fix:"
-  echo "    1) Launch Brave with CDP:  bash scripts/launch-brave-debug.sh  (WSL)  or double-click scripts/launch-brave-debug.cmd (Windows)"
+  echo "    1) Launch Brave with CDP:  bash scripts/launch-browser-debug.sh  (WSL)  or double-click scripts/launch-browser-debug.cmd (Windows)"
   echo "    2) Verify:  curl http://localhost:${PORT}/json/version"
   echo "    3) If NAT mode, Brave must use --remote-debugging-address=0.0.0.0 and firewall must allow WSL subnet (see docs/troubleshooting.md)"
   exit 1

@@ -4,7 +4,7 @@ This repo is **injection / config only** for WSL2. It does **not** replace or re
 Playwright MCP in another project — it gives that project the two missing pieces that fix
 the `MCP error -32001: Request timed out` you see when Playwright MCP can't reach a browser:
 
-1. **A CDP launcher** for your visible Windows Brave/Chrome (`scripts/launch-brave-debug.sh` + friends).
+1. **A CDP launcher** for your visible Windows Brave/Chrome (`scripts/launch-browser-debug.sh` + friends).
 2. **A CDP endpoint pointer** added to that project's `opencode.jsonc`
    (`--cdp-endpoint http://localhost:9222`).
 
@@ -37,9 +37,9 @@ You only touch **one file** in the other project.
 
 ```bash
 # from this repo into the other project
-cp /path/to/wsl-chrome/scripts/launch-brave-debug.sh /path/to/your-project/scripts/
-cp /path/to/wsl-chrome/scripts/launch-brave-debug.ps1 /path/to/your-project/scripts/
-cp /path/to/wsl-chrome/scripts/launch-brave-debug.cmd /path/to/your-project/scripts/
+cp /path/to/wsl-chrome/scripts/launch-browser-debug.sh /path/to/your-project/scripts/
+cp /path/to/wsl-chrome/scripts/launch-browser-debug.ps1 /path/to/your-project/scripts/
+cp /path/to/wsl-chrome/scripts/launch-browser-debug.cmd /path/to/your-project/scripts/
 cp /path/to/wsl-chrome/scripts/wsl-host-ip.sh /path/to/your-project/scripts/
 cp /path/to/wsl-chrome/scripts/check-cdp.sh /path/to/your-project/scripts/
 chmod +x /path/to/your-project/scripts/*.sh
@@ -48,7 +48,7 @@ chmod +x /path/to/your-project/scripts/*.sh
 ### 2) Launch Windows Brave with CDP (every session)
 
 ```bash
-bash scripts/launch-brave-debug.sh   # no-op if CDP already running
+bash scripts/launch-browser-debug.sh   # no-op if CDP already running
 bash scripts/check-cdp.sh            # → ✓ CDP reachable
 ```
 

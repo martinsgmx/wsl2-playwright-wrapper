@@ -2,8 +2,8 @@
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `curl http://localhost:9222/json/version` → `Failed to connect` | Brave not launched with CDP | `bash scripts/launch-brave-debug.sh` (WSL) or double-click `scripts/launch-brave-debug.cmd` (Windows). Then `bash scripts/check-cdp.sh`. |
-| `Port 9222 already in use` | Another debug Brave / VS Code / old instance | `netstat -ano \| findstr :9222` (Windows) → kill holder or `CDP_PORT=9223 bash scripts/launch-brave-debug.sh` and set `CDP_PORT=9223` in `.secrets.env`. |
+| `curl http://localhost:9222/json/version` → `Failed to connect` | Brave not launched with CDP | `bash scripts/launch-browser-debug.sh` (WSL) or double-click `scripts/launch-browser-debug.cmd` (Windows). Then `bash scripts/check-cdp.sh`. |
+| `Port 9222 already in use` | Another debug Brave / VS Code / old instance | `netstat -ano \| findstr :9222` (Windows) → kill holder or `CDP_PORT=9223 bash scripts/launch-browser-debug.sh` and set `CDP_PORT=9223` in `.secrets.env`. |
 | CDP reachable on Windows but `curl` from WSL times out | WSL `NAT` mode + `127.0.0.1` bind | `wslinfo --networking-mode` → if `nat`, launch Brave with `--remote-debugging-address=0.0.0.0` and add scoped firewall: `New-NetFirewallRule -DisplayName "WSL Brave CDP" -Direction Inbound -LocalPort 9222 -Protocol TCP -RemoteAddress 172.16.0.0/12 -Action Allow`. Mirrored mode (this box) needs no rule. |
 | `powershell.exe not found` | `appendWindowsPath=false` | Scripts use absolute `/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe` — keep it, or use Windows double-click path. |
 | `opencode mcp list` shows `playwright` failed | `@playwright/mcp` not fetched / CDP down | `npx -y @playwright/mcp@latest --version`, `bash scripts/check-cdp.sh`, `opencode mcp debug playwright`. |

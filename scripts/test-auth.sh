@@ -22,7 +22,7 @@ echo "  Fixture at $AUTH_URL_FIXTURE → $AUTH_SUCCESS_PATH_FIXTURE"
 
 # CDP mode if Brave is up; otherwise fallback to direct headless (proves init-auth logic without Windows browser)
 if ! bash "$ROOT/scripts/check-cdp.sh" >/dev/null 2>&1; then
-  echo "  (CDP not reachable — falling back to direct headless Playwright for logic proof; start Brave for full CDP test: bash scripts/launch-brave-debug.sh)"
+  echo "  (CDP not reachable — falling back to direct headless Playwright for logic proof; start Brave for full CDP test: bash scripts/launch-browser-debug.sh)"
   USE_CDP=false
 else
   USE_CDP=true

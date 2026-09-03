@@ -12,15 +12,15 @@
 **From WSL:**
 
 ```bash
-bash scripts/launch-brave-debug.sh                      # BROWSER=auto → Brave
-BROWSER=chrome bash scripts/launch-brave-debug.sh       # Chrome
-BROWSER=edge  bash scripts/launch-brave-debug.sh        # Edge
-# optional: CDP_PORT=9223 bash scripts/launch-brave-debug.sh
+bash scripts/launch-browser-debug.sh                      # BROWSER=auto → Brave
+BROWSER=chrome bash scripts/launch-browser-debug.sh       # Chrome
+BROWSER=edge  bash scripts/launch-browser-debug.sh        # Edge
+# optional: CDP_PORT=9223 bash scripts/launch-browser-debug.sh
 ```
 
 **From Windows (Explorer):**
 
-Double-click `scripts/launch-brave-debug.cmd` (calls `launch-brave-debug.ps1` with `-ExecutionPolicy Bypass`).
+Double-click `scripts/launch-browser-debug.cmd` (calls `launch-browser-debug.ps1` with `-ExecutionPolicy Bypass`).
 
 What it does: starts the chosen browser with `--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1`, polls `http://localhost:9222/json/version`. Each brand uses a dedicated named profile at `C:\Users\<you>\AppData\Local\Playwright\<browser>` so launches never collide with your everyday browser profile (and re-launching while open reuses the existing CDP session).
 
@@ -117,7 +117,7 @@ opencode                          # TUI → "use playwright to navigate to $AUTH
 To auto-launch Brave CDP at login, create a Task Scheduler entry that runs:
 
 ```
-powershell -ExecutionPolicy Bypass -File C:\path\to\wsl-chrome\scripts\launch-brave-debug.ps1 -Port 9222
+powershell -ExecutionPolicy Bypass -File C:\path\to\wsl-chrome\scripts\launch-browser-debug.ps1 -Port 9222
 ```
 
 ## Updating

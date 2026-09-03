@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/martinsgmx/wsl2-playwright-wrapper/
 ## After install
 
 ```bash
-bash ~/.opencode/wsl-chrome/scripts/launch-brave-debug.sh   # BROWSER=auto|chrome|edge
+bash ~/.opencode/wsl-chrome/scripts/launch-browser-debug.sh   # BROWSER=auto|chrome|edge
 bash ~/.opencode/wsl-chrome/scripts/check-cdp.sh
 opencode
 # in the TUI:   use playwright to navigate to https://example.com/ and report console errors

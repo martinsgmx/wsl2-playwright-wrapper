@@ -33,7 +33,7 @@ From **any** project directory in WSL2 (cloned **globally**, so it's out of your
 tracking):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/martinsgmx/wsl2-playwright-wrapper/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/martinsgmx/wsl2-playwright-wrapper/stable/install.sh | bash
 ```
 
 It: clones into `~/.opencode/wsl-chrome` → `npm install` (installs the `playwright` dep) →

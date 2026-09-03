@@ -61,5 +61,7 @@ const server = createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`fixture login server at http://localhost:${PORT}/login (user=${USER})`);
+  console.log(
+    `fixture login server at http://localhost:${PORT}/login (user=${USER})`,
+  );
 });

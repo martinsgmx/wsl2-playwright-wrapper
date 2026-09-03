@@ -1,9 +1,6 @@
-# playwright-wrapper-mcp — Playwright MCP wrapper (WSL → Windows browser)
+# wsl2-playwright-wrapper
 
-> Folder stays `wsl-chrome` on disk; package/docs name is `playwright-wrapper-mcp`
-> (wrapper over `@playwright/mcp`, **not** `chrome-mcp`).
-
-Drive your **visible Windows Chrome/Brave/Edge** from `opencode` running in **WSL**, over
+Drive your **visible Windows Chrome/Brave/Edge** from `opencode` running in **WSL2**, over
 CDP, without losing a single Playwright command — and keep every LLM session **isolated**.
 
 ## How it works (CDP flow)
@@ -30,7 +27,7 @@ Flow in words:
 3. Playwright MCP attaches to the **visible Windows browser** via CDP at `ws://localhost:9222`.
 4. Each session gets a **fresh isolated `BrowserContext`** — no cookie bleed between sessions.
 
-## ⚡ One-command install
+## One-command install
 
 From **any** project directory in WSL2 (cloned **globally**, so it's out of your project's git
 tracking):
@@ -74,9 +71,19 @@ If a project already has `@playwright/mcp` installed (`npm i -D @playwright/mcp`
 add the CDP endpoint to its `opencode.jsonc` **command**:
 
 ```jsonc
-{ "mcp": { "playwright": { "type": "local",
-    "command": ["bash", "/home/<you>/.opencode/wsl-chrome/scripts/mcp-wrapper.sh"],
-    "enabled": true, "timeout": 10000 } } }
+{
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "bash",
+        "/home/<usernam>/.opencode/wsl2-playwright-wrapper/scripts/mcp-wrapper.sh",
+      ],
+      "enabled": true,
+      "timeout": 10000,
+    },
+  },
+}
 ```
 
 That fixes the `MCP error -32001: Request timed out` (MCP had no browser to talk to) and keeps
